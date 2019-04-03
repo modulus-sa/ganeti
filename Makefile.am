@@ -270,6 +270,7 @@ BUILDTIME_DIRS = \
 	$(BUILDTIME_DIR_AUTOCREATE) \
 	apps \
 	dist \
+	dist/build \
 	doc/html \
 	doc/man-html
 
@@ -302,7 +303,9 @@ maintainer-clean-local:
 CLEANFILES = \
 	$(addsuffix /*.py[co],$(DIRS)) \
 	$(addsuffix /*.hi,$(HS_DIRS)) \
+	$(addsuffix /*.dyn_hi,$(HS_DIRS)) \
 	$(addsuffix /*.o,$(HS_DIRS)) \
+	$(addsuffix /*.dyn_o,$(HS_DIRS)) \
 	$(addsuffix /*.$(HTEST_SUFFIX)_hi,$(HS_DIRS)) \
 	$(addsuffix /*.$(HTEST_SUFFIX)_o,$(HS_DIRS)) \
 	$(HASKELL_PACKAGE_VERSIONS_FILE) \
@@ -864,9 +867,9 @@ HEXTRA_COMBINED = $(HEXTRA) $(HEXTRA_CONFIGURE)
 # errors in the JQueue tests with the threaded runtime.
 # See https://ghc.haskell.org/trac/ghc/ticket/7646
 if GHC_LE_76
-HEXTRA_TEST =
+HEXTRA_TEST = -with-rtsopts="-A32m" -rtsopts
 else
-HEXTRA_TEST = -threaded -with-rtsopts=-N
+HEXTRA_TEST = -threaded -with-rtsopts="-N -A32m" -rtsopts
 endif
 
 # exclude options for coverage reports
@@ -2812,7 +2815,7 @@ distcheck-hook:
 # unnecessary warnings for packagers. Directories used by automake during
 # distcheck must be excluded.
 	if find $(top_distdir) -empty -and -not \( \
-	    -path $(top_distdir)/_build -or \
+	    -regex '$(top_distdir)/_build\(/.*\)?' -or \
 	    -path $(top_distdir)/_inst \) | grep .; then \
 	  echo "Found empty files or directories in final archive." 1>&2; \
 	  exit 1; \
