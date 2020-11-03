@@ -1256,6 +1256,11 @@ class KVMHypervisor(hv_base.BaseHypervisor):
         # Add driver, id, bus, and addr or channel, scsi-id, lun if any.
         dev_val = _GenerateDeviceHVInfoStr(cfdev.hvinfo)
         dev_val += ",drive=%s" % kvm_devid
+
+      if cfdev.bootindex is not None and cfdev.bootindex >= 0:
+        dev_val += ",bootindex=%s" % cfdev.bootindex
+
+      if dev_val:
         dev_opts.extend(["-device", dev_val])
 
       dev_opts.extend(["-drive", drive_val])

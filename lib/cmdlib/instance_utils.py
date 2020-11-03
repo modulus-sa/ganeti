@@ -779,16 +779,20 @@ def BuildDiskEnv(idx, disk):
     name = disk.get(constants.IDISK_NAME, "")
     size = disk.get(constants.IDISK_SIZE, "")
     mode = disk.get(constants.IDISK_MODE, "")
+    bootindex = disk.get(constants.IDISK_BOOT_INDEX, "")
   elif isinstance(disk, objects.Disk):
     uuid = disk.uuid
     name = disk.name
     size = disk.size
     mode = disk.mode
+    bootindex = disk.bootindex
     ret.update(BuildDiskLogicalIDEnv(idx, disk))
 
-  # only name is optional here
+  # only name and bootindex is optional here
   if name:
     ret["INSTANCE_DISK%d_NAME" % idx] = name
+  if bootindex:
+    ret["INSTANCE_DISK%d_BOOT_INDEX" % idx] = bootindex
   ret["INSTANCE_DISK%d_UUID" % idx] = uuid
   ret["INSTANCE_DISK%d_SIZE" % idx] = size
   ret["INSTANCE_DISK%d_MODE" % idx] = mode

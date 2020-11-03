@@ -408,9 +408,10 @@ $(buildObject "IDiskParams" "idisk"
   , optionalField $ simpleField C.idiskVg     [t| NonEmptyString |]
   , optionalField $ simpleField C.idiskMetavg [t| NonEmptyString |]
   , optionalField $ simpleField C.idiskName   [t| NonEmptyString |]
-  , optionalField $ simpleField C.idiskProvider [t| NonEmptyString |]
-  , optionalField $ simpleField C.idiskSpindles [t| Int          |]
-  , optionalField $ simpleField C.idiskAccess   [t| NonEmptyString |]
+  , optionalField $ simpleField C.idiskProvider  [t| NonEmptyString |]
+  , optionalField $ simpleField C.idiskSpindles  [t| Int          |]
+  , optionalField $ simpleField C.idiskBootIndex [t| Int          |]
+  , optionalField $ simpleField C.idiskAccess    [t| NonEmptyString |]
   , andRestArguments "opaque"
   ])
 

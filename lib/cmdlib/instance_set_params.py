@@ -206,6 +206,13 @@ class LUInstanceSetParams(LogicalUnit):
                                    constants.IDISK_SIZE, errors.ECODE_INVAL)
       size = int(size)
 
+      bootindex = params.get(constants.IDISK_BOOT_INDEX, None)
+      if bootindex is not None:
+        if int(bootindex) >= 0:
+          bootindex = int(bootindex)
+        else:
+          bootindex = -1
+
       params[constants.IDISK_SIZE] = size
       name = params.get(constants.IDISK_NAME, None)
       if name is not None and name.lower() == constants.VALUE_NONE:
@@ -1664,6 +1671,7 @@ class LUInstanceSetParams(LogicalUnit):
     if disk.dev_type in constants.DTS_INSTANCE_DEPENDENT_PATH:
       # Add disk size/mode, else GenerateDiskTemplate will not work.
       params[constants.IDISK_SIZE] = disk.size
+      params[constants.IDISK_BOOT_INDEX] = disk.bootindex
       params[constants.IDISK_MODE] = str(disk.mode)
       dummy_disk = self._GenerateDiskTemplateWrapper(idx, disk.dev_type, params)
       new_logical_id = dummy_disk.logical_id
@@ -1707,6 +1715,10 @@ class LUInstanceSetParams(LogicalUnit):
     if constants.IDISK_MODE in params:
       disk.mode = params.get(constants.IDISK_MODE)
       changes.append(("disk.mode/%d" % idx, disk.mode))
+
+    if constants.IDISK_BOOT_INDEX in params:
+      disk.bootindex = params.get(constants.IDISK_BOOT_INDEX)
+      changes.append(("disk.bootindex/%d" % idx, disk.bootindex))
 
     if constants.IDISK_NAME in params:
       disk.name = params.get(constants.IDISK_NAME)

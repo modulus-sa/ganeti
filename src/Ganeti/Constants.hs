@@ -2562,6 +2562,9 @@ idiskAccess = "access"
 idiskType :: String
 idiskType = "dev_type"
 
+idiskBootIndex :: String
+idiskBootIndex = "bootindex"
+
 idiskParamsTypes :: Map String VType
 idiskParamsTypes =
   Map.fromList [ (idiskSize, VTypeSize)
@@ -2574,6 +2577,7 @@ idiskParamsTypes =
                , (idiskAccess, VTypeString)
                , (idiskName, VTypeMaybeString)
                , (idiskType, VTypeString)
+               , (idiskBootIndex, VTypeInt)
                ]
 
 idiskParams :: FrozenSet String
@@ -2582,6 +2586,7 @@ idiskParams = ConstantUtils.mkSet (Map.keys idiskParamsTypes)
 modifiableIdiskParamsTypes :: Map String VType
 modifiableIdiskParamsTypes =
   Map.fromList [(idiskMode, VTypeString),
+                (idiskBootIndex, VTypeInt),
                 (idiskName, VTypeString)]
 
 modifiableIdiskParams :: FrozenSet String

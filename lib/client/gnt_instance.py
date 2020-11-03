@@ -554,9 +554,20 @@ def RecreateDisks(opts, args):
       if constants.IDISK_SPINDLES in ddict:
         try:
           ddict[constants.IDISK_SPINDLES] = \
-              int(ddict[constants.IDISK_SPINDLES])
+            int(ddict[constants.IDISK_SPINDLES])
         except ValueError as err:
           raise errors.OpPrereqError("Invalid spindles for disk %d: %s" %
+                                     (didx, err), errors.ECODE_INVAL)
+
+      if constants.IDISK_BOOT_INDEX in ddict:
+        try:
+          if int(ddict[constants.IDISK_BOOT_INDEX]) >= 0:
+            ddict[constants.IDISK_BOOT_INDEX] = \
+              int(ddict[constants.IDISK_BOOT_INDEX])
+          else:
+            ddict[constants.IDISK_BOOT_INDEX] = -1
+        except ValueError as err:
+          raise errors.OpPrereqError("Invalid bootindex for disk %d: %s" %
                                      (didx, err), errors.ECODE_INVAL)
 
       disks.append((didx, ddict))
@@ -1066,6 +1077,11 @@ def _FormatBlockDevInfo(idx, top_level, dev, roman):
   if top_level:
     if dev["spindles"] is not None:
       data.append(("spindles", dev["spindles"]))
+    if dev["bootindex"] is not None:
+      if dev["bootindex"] >= 0:
+        data.append(("bootindex", dev["bootindex"]))
+      else:
+        data.append(("bootindex", "Unset"))
     data.append(("access mode", dev["mode"]))
   if dev["logical_id"] is not None:
     try:
@@ -1346,7 +1362,13 @@ def _ParseDiskSizes(mods):
   for (action, _, params) in mods:
     if params and constants.IDISK_SPINDLES in params:
       params[constants.IDISK_SPINDLES] = \
-          int(params[constants.IDISK_SPINDLES])
+        int(params[constants.IDISK_SPINDLES])
+    if params and constants.IDISK_BOOT_INDEX in params:
+      if int(params[constants.IDISK_BOOT_INDEX]) >= 0:
+        params[constants.IDISK_BOOT_INDEX] = \
+          int(params[constants.IDISK_BOOT_INDEX])
+      else:
+        params[constants.IDISK_BOOT_INDEX] = -1
     if params and constants.IDISK_SIZE in params:
       params[constants.IDISK_SIZE] = \
         utils.ParseUnit(params[constants.IDISK_SIZE])
