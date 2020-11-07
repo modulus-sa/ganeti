@@ -520,7 +520,7 @@ class ConfigData(ConfigObject):
 class NIC(ConfigObject):
   """Config object representing a network card."""
   __slots__ = ["name", "mac", "ip", "network",
-               "nicparams", "netinfo", "pci", "hvinfo"] + _UUID
+               "nicparams", "netinfo", "pci", "bootindex", "hvinfo"] + _UUID
 
   @classmethod
   def CheckParameterSyntax(cls, nicparams):

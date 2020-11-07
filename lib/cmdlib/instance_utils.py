@@ -115,7 +115,7 @@ def BuildInstanceHookEnv(name, primary_node_name, secondary_node_names, os_type,
     }
   if nics:
     nic_count = len(nics)
-    for idx, (name, uuid, ip, mac, mode, link, vlan, net, netinfo) \
+    for idx, (name, uuid, ip, mac, mode, link, vlan, net, bootindex, netinfo) \
         in enumerate(nics):
       if ip is None:
         ip = ""
@@ -127,6 +127,7 @@ def BuildInstanceHookEnv(name, primary_node_name, secondary_node_names, os_type,
       env["INSTANCE_NIC%d_MODE" % idx] = mode
       env["INSTANCE_NIC%d_LINK" % idx] = link
       env["INSTANCE_NIC%d_VLAN" % idx] = vlan
+      env["INSTANCE_NIC%d_BOOTINDEX" % idx] = bootindex
       if netinfo:
         nobj = objects.Network.FromDict(netinfo)
         env.update(nobj.HooksDict("INSTANCE_NIC%d_" % idx))
@@ -401,7 +402,7 @@ def NICToTuple(lu, nic):
     nobj = lu.cfg.GetNetwork(nic.network)
     netinfo = objects.Network.ToDict(nobj)
   return (nic.name, nic.uuid, nic.ip, nic.mac, mode, link, vlan,
-          nic.network, netinfo)
+          nic.network, nic.bootindex, netinfo)
 
 
 def NICListToTuple(lu, nics):
@@ -1303,9 +1304,12 @@ def ComputeNics(op, cluster, default_ip, cfg, ec_id):
     name = nic.get(constants.INIC_NAME, None)
     if name is not None and name.lower() == constants.VALUE_NONE:
       name = None
+    bootindex = nic.get(constants.INIC_BOOT_INDEX, None)
     nic_obj = objects.NIC(mac=mac, ip=nic_ip, name=name,
                           network=net_uuid, nicparams=nicparams)
     nic_obj.uuid = cfg.GenerateUniqueID(ec_id)
+    if bootindex is not None:
+      nic_obj.bootindex = bootindex
     nics.append(nic_obj)
 
   return nics

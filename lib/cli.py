@@ -1291,6 +1291,16 @@ def ParseNicOption(optvalue):
       raise errors.OpPrereqError("Invalid nic/%d value: expected dict,"
                                  " got %s" % (nidx, ndict), errors.ECODE_INVAL)
 
+    if constants.INIC_BOOT_INDEX in ndict:
+      try:
+        if int(ndict[constants.INIC_BOOT_INDEX]) >= 0:
+          ndict[constants.INIC_BOOT_INDEX] = int(ndict[constants.INIC_BOOT_INDEX])
+        else:
+          ndict[constants.INIC_BOOT_INDEX] = -1
+      except:
+        logging.warning("bootindex value ignored and set to '-1'")
+        ndict[constants.INIC_BOOT_INDEX] = -1
+
     utils.ForceDictType(ndict, constants.INIC_PARAMS_TYPES)
 
     nics[nidx] = ndict

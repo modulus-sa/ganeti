@@ -1112,10 +1112,18 @@ def _FormatBlockDevInfo(idx, top_level, dev, roman):
 
 def _FormatInstanceNicInfo(idx, nic, roman=False):
   """Helper function for L{_FormatInstanceInfo()}"""
-  (name, uuid, ip, mac, mode, link, vlan, _, netinfo) = nic
+  (name, uuid, ip, mac, mode, link, vlan, _, bootindex, netinfo) = nic
   network_name = None
+  boot_index = 'Unset'
   if netinfo:
     network_name = netinfo["name"]
+  if bootindex:
+    try:
+      if int(bootindex) >= 0:
+        boot_index = int(bootindex)
+    except:
+      logging.warning("bootindex value ignored for NIC with id: %s", idx)
+
   return [
     ("nic/%s" % str(compat.TryToRoman(idx, roman)), ""),
     ("MAC", str(mac)),
@@ -1124,6 +1132,7 @@ def _FormatInstanceNicInfo(idx, nic, roman=False):
     ("link", str(link)),
     ("vlan", str(compat.TryToRoman(vlan, roman))),
     ("network", str(network_name)),
+    ("bootindex", str(boot_index)),
     ("UUID", str(uuid)),
     ("name", str(name)),
     ]
@@ -1416,13 +1425,19 @@ def SetInstanceParams(opts, args):
   FixHvParams(opts.hvparams)
 
   nics = _ConvertNicDiskModifications(opts.nics)
-  for action, _, __ in nics:
+  for action, _, params in nics:
     if action == constants.DDM_MODIFY and opts.hotplug and not opts.force:
       usertext = ("You are about to hot-modify a NIC. This will be done"
                   " by removing the existing NIC and then adding a new one."
                   " Network connection might be lost. Continue?")
       if not AskUser(usertext):
         return 1
+    if params and constants.INIC_BOOT_INDEX in params:
+      if int(params[constants.INIC_BOOT_INDEX]) >= 0:
+        params[constants.INIC_BOOT_INDEX] = \
+          int(params[constants.INIC_BOOT_INDEX])
+      else:
+        params[constants.INIC_BOOT_INDEX] = -1
 
   disks = _ParseDiskSizes(_ConvertNicDiskModifications(opts.disks))
 

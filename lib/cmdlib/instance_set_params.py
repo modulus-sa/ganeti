@@ -1843,7 +1843,7 @@ class LUInstanceSetParams(LogicalUnit):
     """
     changes = []
 
-    for key in [constants.INIC_MAC, constants.INIC_IP, constants.INIC_NAME]:
+    for key in [constants.INIC_MAC, constants.INIC_IP, constants.INIC_NAME, constants.INIC_BOOT_INDEX]:
       if key in params:
         changes.append(("nic.%s/%d" % (key, idx), params[key]))
         setattr(nic, key, params[key])
