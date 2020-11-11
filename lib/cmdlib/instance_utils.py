@@ -577,7 +577,18 @@ def CheckNodeFreeMemory(lu, node_uuid, reason, requested, hvname, hvparams):
     raise errors.OpPrereqError("Can't compute free memory on node %s, result"
                                " was '%s'" % (node_name, free_mem),
                                errors.ECODE_ENVIRON)
-  if requested > free_mem:
+
+  if hvparams.get("mem_path", None):
+    free_hugepages_mem = hv_info.get("hugepages_free", None)
+    if requested > free_hugepages_mem:
+      raise errors.OpPrereqError("Not enough hugepages capacity on node %s for %s:"
+                                 " needed %s MiB, available %s MiB" %
+                                 (node_name, reason, requested, free_hugepages_mem),
+                                 errors.ECODE_NORES)
+    else:
+      free_mem = free_hugepages_mem
+
+  elif requested > free_mem:
     raise errors.OpPrereqError("Not enough memory on node %s for %s:"
                                " needed %s MiB, available %s MiB" %
                                (node_name, reason, requested, free_mem),
