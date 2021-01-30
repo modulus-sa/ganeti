@@ -553,6 +553,8 @@ $(buildObject "HvInfo" "hvInfo"
   , simpleField "cpu_nodes" [t| Int |]
   , simpleField "cpu_sockets" [t| Int |]
   , simpleField "cpu_dom0" [t| Int |]
+  , simpleField "hugepages_total" [t| Int |]
+  , simpleField "hugepages_free" [t| Int |]
   ])
 
 $(buildObject "RpcResultNodeInfo" "rpcResNodeInfo"

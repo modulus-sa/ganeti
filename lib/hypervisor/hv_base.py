@@ -726,11 +726,125 @@ class BaseHypervisor(object):
     result["cpu_total"] = cpu_total
     # We assume that the node OS can access all the CPUs
     result["cpu_dom0"] = cpu_total
-    # FIXME: export correct data here
-    result["cpu_nodes"] = 1
-    result["cpu_sockets"] = 1
+
+    # Fetch info from other functions
+    result["numa_topo"] = BaseHypervisor.GetNodeNumaTopology()
+    cpu_info = BaseHypervisor.GetNodeCpuTopology()
+    result["cpu_topo"] = cpu_info["threads_list"]
+    result["cpu_nodes"] = len(result["numa_topo"])
+    result["cpu_sockets"] = len(cpu_info["sockets_list"])
+
+    # Calculate hugepage totals
+    hptotal = 0
+    hpfree = 0
+    for node in result["numa_topo"]:
+      for size in node["numa_info"]:
+        hptotal = hptotal + (int(size["size"]) * int(size["total"]))
+        hpfree = hpfree + (int(size["size"]) * int(size["free"]))
+
+    result["hugepages_total"] = hptotal
+    result["hugepages_free"] = hpfree
 
     return result
+
+  @staticmethod
+  def GetNodeNumaTopology(numainfo="/sys/devices/system/node/"):
+    """For linux systems, return actual OS information on NUMA topology.
+
+    This is an abstraction for all non-hypervisor-based classes, where
+    the node actually sees all the memory and CPUs via the /sys
+    interface and standard commands. The other case if for example
+    xen, where you only see the hardware resources via xen-specific
+    tools.
+
+    @param numainfo: name of the path containing NUMA information
+    @type numainfo: string
+    @return: a list of dicts with the following keys:
+          - id: the id of the NUMA node
+          - cores: a list of strings representing CPU cores belonging to the node
+          - numa_info: a list of dicts with the following keys for each supported HP size
+              - specpath: path under /sys from where the info was extracted
+              - size: the hugepage size the dict info is about
+              - free: number of free hugepages of this size
+              - total: number of total hugepages of this size
+
+    """
+
+    try:
+      data = os.listdir(numainfo)
+    except OSError as err:
+      raise errors.HypervisorError("Failed to list node NUMA info: %s" % (err,))
+
+    # Get subdirs containing node info
+    numanode_list = [i for i in data if re.match(r"^node[0-9]+$", i)]
+
+    # Construct the full path for each node
+    numanode_list = [numainfo + i + "/" for i in numanode_list]
+
+    # Get NUMA info
+    nodes = []
+    for node in numanode_list:
+      # Get the id of the node currently being processed
+      id = re.match(r".*(node)(\d+)/$", node).group(2)
+      # Get a list of physical cores belonging to NUMA node
+      cores = utils.ReadFile(node + "cpulist").splitlines()[0].split(",")
+      # Get a list of supported hugepage sizes
+      hpsizes = os.listdir(node + "hugepages/")
+
+      # Process hugepage info for current node, fore each supported size
+      hpspecs = []
+      for hpsize in hpsizes:
+        hpspecs.append({"specpath": node + "hugepages/" + hpsize + "/"})
+        size = re.match(r"^hugepages-(\d+)kB$", hpsize).group(1)
+        hpspecs[-1]["size"] = int(size)//1024
+        hpspecs[-1]["free"] = utils.ReadFile(hpspecs[-1]["specpath"] + "free_hugepages").splitlines()[0]
+        hpspecs[-1]["total"] = utils.ReadFile(hpspecs[-1]["specpath"] + "nr_hugepages").splitlines()[0]
+
+      # Save everything we've learned for this node
+      nodes.append({"id": id})
+      nodes[-1]["cores"] = cores
+      nodes[-1]["numa_info"] = hpspecs
+
+    return nodes
+
+  @staticmethod
+  def GetNodeCpuTopology(coresinfo="/sys/devices/system/cpu/"):
+    """For linux systems, return actual OS information on CPU thread topology.
+
+    This is an abstraction for all non-hypervisor-based classes, where
+    the node actually sees all the memory and CPUs via the /sys
+    interface and standard commands. The other case if for example
+    xen, where you only see the hardware resources via xen-specific
+    tools.
+
+    @param coresinfo: name of the path containing CPU information
+    @type coresinfo: string
+    @return: a list of tuples representing CPU threads sharing a CPU core
+
+    """
+
+    try:
+      data = os.listdir(coresinfo)
+    except OSError as err:
+      raise errors.HypervisorError("Failed to list node CPU info: %s" % (err,))
+
+    # Get subdirs containing node info
+    cpu_list = [i for i in data if re.match(r"^cpu[0-9]+$", i)]
+
+    threads_list = []
+    sockets_list = []
+    for core in cpu_list:
+      socket = core + "/topology/physical_package_id"
+      core = core + "/topology/thread_siblings_list"
+      simblings = utils.ReadFile(coresinfo + core)
+      simblings = tuple(simblings.splitlines()[0].split(","))
+      physical_socket = utils.ReadFile(coresinfo + socket).splitlines()[0]
+      if simblings not in threads_list:
+        threads_list.append(simblings)
+      if physical_socket not in sockets_list:
+        sockets_list.append(physical_socket)
+
+    return {"threads_list": threads_list, "sockets_list": sockets_list}
 
   @classmethod
   def LinuxPowercycle(cls):

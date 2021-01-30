@@ -583,6 +583,8 @@ class KVMHypervisor(hv_base.BaseHypervisor):
     constants.HV_CPU_CORES: hv_base.OPT_NONNEGATIVE_INT_CHECK,
     constants.HV_CPU_THREADS: hv_base.OPT_NONNEGATIVE_INT_CHECK,
     constants.HV_CPU_SOCKETS: hv_base.OPT_NONNEGATIVE_INT_CHECK,
+    constants.HV_KVM_OPTIMIZE_MEM_PLACEMENT: hv_base.NO_CHECK,
+    constants.HV_KVM_FAIL_ON_INSUFFICIENT_HP: hv_base.NO_CHECK,
     constants.HV_SOUNDHW: hv_base.NO_CHECK,
     constants.HV_USB_DEVICES: hv_base.NO_CHECK,
     constants.HV_VGA: hv_base.NO_CHECK,

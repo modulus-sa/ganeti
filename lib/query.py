@@ -1189,6 +1189,10 @@ _NODE_LIVE_FIELDS = {
             "Amount of memory used by node (dom0 for Xen)"),
   "mtotal": ("MTotal", QFT_UNIT, "memory_total",
              "Total amount of memory of physical machine"),
+  "hptotal": ("HPTotal", QFT_UNIT, "hugepages_total",
+             "Total capacity of hugepages configured on node in MiB"),
+  "hpfree": ("HPFree", QFT_UNIT, "hugepages_free",
+             "Hugepages capacity in MiB available for instance allocations"),
   }
 
 

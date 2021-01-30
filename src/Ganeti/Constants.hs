@@ -1695,6 +1695,12 @@ hvKvmMachineVersion = "machine_version"
 hvKvmMigrationCaps :: String
 hvKvmMigrationCaps = "migration_caps"
 
+hvKvmOptimizeMemPlacement :: String
+hvKvmOptimizeMemPlacement = "mem_optimize"
+
+hvKvmFailOnInsufficientHp :: String
+hvKvmFailOnInsufficientHp = "fail_on_no_hp"
+
 hvKvmPath :: String
 hvKvmPath = "kvm_path"
 
@@ -1918,6 +1924,8 @@ hvsParameterTypes = Map.fromList
   , (hvKvmFloppyImagePath,              VTypeString)
   , (hvKvmMachineVersion,               VTypeString)
   , (hvKvmMigrationCaps,                VTypeString)
+  , (hvKvmOptimizeMemPlacement,         VTypeBool)
+  , (hvKvmFailOnInsufficientHp,         VTypeBool)
   , (hvKvmPath,                         VTypeString)
   , (hvKvmDiskAio,                      VTypeString)
   , (hvKvmScsiControllerType,           VTypeString)
@@ -4154,6 +4162,8 @@ hvcDefaults =
           , (hvCpuCores,                        PyValueEx (0 :: Int))
           , (hvCpuThreads,                      PyValueEx (0 :: Int))
           , (hvCpuSockets,                      PyValueEx (0 :: Int))
+          , (hvKvmOptimizeMemPlacement,         PyValueEx False)
+          , (hvKvmFailOnInsufficientHp,         PyValueEx False)
           , (hvSoundhw,                         PyValueEx "")
           , (hvUsbDevices,                      PyValueEx "")
           , (hvVga,                             PyValueEx "")
